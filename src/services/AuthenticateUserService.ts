@@ -14,13 +14,13 @@ interface IUserResponse {
 }
 
 class AuthenticateUserService {
-  async execute(code: string) {
+  async execute(code: string, isMobile: boolean) {
     const url = 'https://github.com/login/oauth/access_token';
 
     const { data: accessTokenResponse } = await axios.post<IAccessTokenResponse>(url, null, {
       params: {
-        client_id: process.env.GITHUB_CLIENT_ID,
-        client_secret: process.env.GITHUB_CLIENT_SECRET,
+        client_id: !isMobile ? process.env.GITHUB_CLIENT_ID : process.env.GITHUB_CLIENT_ID_MOBILE,
+        client_secret: !isMobile ? process.env.GITHUB_CLIENT_SECRET : process.env.GITHUB_CLIENT_SECRET_MOBILE,
         code
       },
       headers: {
@@ -28,6 +28,12 @@ class AuthenticateUserService {
       }
     });
     
+    console.log(
+      isMobile,
+      !isMobile ? process.env.GITHUB_CLIENT_ID : process.env.GITHUB_CLIENT_ID_MOBILE,
+      code
+    );
+
     const response = await axios.get<IUserResponse>(`https://api.github.com/user`, {
       headers: {
         authorization: `Bearer ${accessTokenResponse.access_token}`
